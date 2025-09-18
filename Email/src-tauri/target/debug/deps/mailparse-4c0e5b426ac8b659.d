@@ -1,0 +1,11 @@
+/Users/sambav/Library/CloudStorage/OneDrive-SambavRavi/Documents/Melanie/Email/src-tauri/target/debug/deps/libmailparse-4c0e5b426ac8b659.rmeta: /Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/lib.rs /Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/addrparse.rs /Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/body.rs /Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/dateparse.rs /Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/header.rs /Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/headers.rs /Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/msgidparse.rs
+
+/Users/sambav/Library/CloudStorage/OneDrive-SambavRavi/Documents/Melanie/Email/src-tauri/target/debug/deps/mailparse-4c0e5b426ac8b659.d: /Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/lib.rs /Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/addrparse.rs /Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/body.rs /Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/dateparse.rs /Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/header.rs /Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/headers.rs /Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/msgidparse.rs
+
+/Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/lib.rs:
+/Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/addrparse.rs:
+/Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/body.rs:
+/Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/dateparse.rs:
+/Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/header.rs:
+/Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/headers.rs:
+/Users/sambav/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mailparse-0.14.1/src/msgidparse.rs:

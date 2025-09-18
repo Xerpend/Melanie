@@ -1,0 +1,1234 @@
+openapi: 3.0.3
+info:
+  title: Melanie AI API
+  description: |
+    Unified AI platform with multi-model integration and advanced orchestration capabilities.
+    
+    ## Overview
+    
+    The Melanie AI API provides secure access to multiple AI models through a unified interface,
+    featuring advanced orchestration, RAG capabilities, and enterprise-grade security.
+    
+    ## Key Features
+    
+    - **Multi-Model Integration**: Access to Grok-4, Grok-3-mini, Grok-Code-Fast, and GPT-5-mini
+    - **OpenAI Compatibility**: Standard OpenAI API format for seamless integration
+    - **Advanced Orchestration**: Deep research workflows with multi-agent coordination
+    - **RAG System**: Production-grade retrieval-augmented generation
+    - **Tool System**: Intelligent tool calling with automatic selection
+    - **Security**: Tailscale network requirement with API key authentication
+    - **MCP Integration**: Access to current documentation and best practices
+    
+    ## Authentication
+    
+    All API endpoints require authentication using API keys with the `mel_` prefix.
+    Include your API key in the Authorization header:
+    
+    ```
+    Authorization: Bearer mel_your_api_key_here
+    ```
+    
+    ## Rate Limits
+    
+    - **Default**: 100 requests per minute per API key
+    - **Burst**: Short bursts allowed within the minute window
+    - **Headers**: Rate limit information included in response headers
+    
+    ## Network Requirements
+    
+    - **Tailscale**: Server requires Tailscale network for security
+    - **CORS**: Restricted to localhost and Tailscale origins
+    - **Ports**: API server runs on port 8000, Web interface on port 3000
+    
+  version: 1.0.0
+  contact:
+    name: Melanie AI Support
+    url: https://github.com/your-org/melanie-ai
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://{tailscale_ip}:8000
+    description: Tailscale network server
+    variables:
+      tailscale_ip:
+        default: "100.x.x.x"
+        description: Your Tailscale IP address
+  - url: http://localhost:8000
+    description: Local development server
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /:
+    get:
+      summary: Server Information
+      description: Get basic server information and status
+      tags:
+        - Core
+      responses:
+        '200':
+          description: Server information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Melanie AI API Server"
+                  version:
+                    type: string
+                    example: "1.0.0"
+                  status:
+                    type: string
+                    example: "running"
+                  tailscale_ip:
+                    type: string
+                    example: "100.64.1.2"
+
+  /health:
+    get:
+      summary: Health Check
+      description: Get server health status and configuration
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /health/detailed:
+    get:
+      summary: Detailed Health Check
+      description: Comprehensive health check with component status
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Detailed health information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetailedHealthResponse'
+
+  /health/performance:
+    get:
+      summary: Performance Metrics
+      description: Get system performance metrics and resource usage
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Performance metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerformanceMetrics'
+
+  /tailscale/status:
+    get:
+      summary: Tailscale Status
+      description: Get Tailscale network status and interface information
+      tags:
+        - Network
+      responses:
+        '200':
+          description: Tailscale status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TailscaleStatus'
+
+  /auth/keys:
+    post:
+      summary: Create API Key
+      description: Generate a new API key with mel_ prefix
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: API key created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateKeyResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+
+  /auth/keys/{key_id}:
+    get:
+      summary: Get API Key Info
+      description: Get information about an API key (users can only view their own keys)
+      tags:
+        - Authentication
+      parameters:
+        - name: key_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: API key identifier
+      responses:
+        '200':
+          description: API key information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyInfoResponse'
+        '403':
+          description: Forbidden - can only view own keys
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '404':
+          description: API key not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+    delete:
+      summary: Deactivate API Key
+      description: Deactivate an API key (users can only deactivate their own keys)
+      tags:
+        - Authentication
+      parameters:
+        - name: key_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: API key identifier
+      responses:
+        '200':
+          description: API key deactivated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  key_id:
+                    type: string
+                  deactivated_at:
+                    type: string
+                    format: date-time
+        '403':
+          description: Forbidden - can only deactivate own keys
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '404':
+          description: API key not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+
+  /chat/completions:
+    post:
+      summary: Create Chat Completion
+      description: |
+        Create a chat completion using the specified AI model.
+        
+        ## Features
+        
+        - **Multi-Model Support**: Choose from Melanie-3, Melanie-3-light, or Melanie-3-code
+        - **Tool Calling**: Automatic tool selection based on model capabilities
+        - **RAG Integration**: Automatic context injection for all requests
+        - **Deep Research**: Advanced research orchestration with multi-agent coordination
+        - **Web Search**: Optional Perplexity integration for real-time information
+        
+        ## Model Capabilities
+        
+        | Model | Coder | Multimodal | Search | Agent | Use Case |
+        |-------|-------|------------|--------|-------|----------|
+        | Melanie-3 | ✓ | ✓ | ✓* | ✓ | General tasks, complex reasoning |
+        | Melanie-3-light | ✓ | ✓ | ✓* | ✓ | Lightweight operations, coordination |
+        | Melanie-3-code | - | ✓ | ✓* | - | Specialized coding and debugging |
+        
+        *Available when web_search=true
+        
+        ## Deep Research Mode
+        
+        When `web_search=true` and the query contains research keywords, the system
+        automatically generates a research plan and spawns multiple agents for
+        comprehensive analysis.
+        
+      tags:
+        - Chat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatCompletionRequest'
+            examples:
+              basic_chat:
+                summary: Basic Chat
+                value:
+                  model: "Melanie-3"
+                  messages:
+                    - role: "user"
+                      content: "Hello, how are you?"
+              coding_task:
+                summary: Coding Task
+                value:
+                  model: "Melanie-3-code"
+                  messages:
+                    - role: "user"
+                      content: "Write a Python function to calculate fibonacci numbers"
+                  tools:
+                    - type: "function"
+                      function:
+                        name: "coder"
+                        description: "Generate and test code"
+              research_query:
+                summary: Deep Research
+                value:
+                  model: "Melanie-3"
+                  messages:
+                    - role: "user"
+                      content: "Research the latest developments in quantum computing and their implications for cryptography"
+                  web_search: true
+      responses:
+        '200':
+          description: Chat completion generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatCompletionResponse'
+              examples:
+                basic_response:
+                  summary: Basic Response
+                  value:
+                    id: "chatcmpl-123"
+                    object: "chat.completion"
+                    created: 1677652288
+                    model: "Melanie-3"
+                    choices:
+                      - index: 0
+                        message:
+                          role: "assistant"
+                          content: "Hello! I'm doing well, thank you for asking. How can I help you today?"
+                        finish_reason: "stop"
+                    usage:
+                      prompt_tokens: 12
+                      completion_tokens: 18
+                      total_tokens: 30
+                research_response:
+                  summary: Research Response with Plan
+                  value:
+                    id: "chatcmpl-456"
+                    object: "chat.completion"
+                    created: 1677652288
+                    model: "Melanie-3"
+                    choices:
+                      - index: 0
+                        message:
+                          role: "assistant"
+                          content: "I'll conduct comprehensive research on quantum computing developments..."
+                        finish_reason: "stop"
+                    usage:
+                      prompt_tokens: 45
+                      completion_tokens: 120
+                      total_tokens: 165
+                    research_plan:
+                      id: "research-789"
+                      title: "Quantum Computing and Cryptography Research"
+                      description: "Comprehensive analysis of recent quantum computing advances"
+                      subtasks:
+                        - id: "subtask-1"
+                          title: "Current Quantum Computing State"
+                          description: "Research latest quantum computing hardware and software developments"
+                          estimated_duration: 300
+                          tools_required: ["light-search", "medium-search"]
+                      estimated_agents: 3
+                      estimated_duration: 900
+        '400':
+          description: Bad request - invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+              example:
+                error: "validation_error"
+                message: "Invalid request format"
+                details:
+                  validation_errors:
+                    - field: "messages"
+                      message: "At least one message is required"
+        '401':
+          description: Unauthorized - invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '503':
+          description: Service unavailable - AI models not available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+
+  /files:
+    post:
+      summary: Upload File
+      description: |
+        Upload a file for processing and optional RAG ingestion.
+        
+        ## Supported File Types
+        
+        - **Text Files**: .txt, .md (auto-processed via RAG)
+        - **Documents**: .pdf (metadata stored for multimodal processing)
+        - **Images**: .jpg, .jpeg, .png, .webp (metadata stored)
+        - **Data**: .json (basic validation and storage)
+        
+        ## Processing Behavior
+        
+        - **TXT/MD files**: Automatically ingested into RAG system for context
+        - **PDF/Images**: Metadata extracted and stored for multimodal processing
+        - **Other files**: Basic validation and secure storage
+        
+        ## File Limits
+        
+        - **Size**: Maximum 50MB per file
+        - **Security**: Filename sanitization and content validation
+        - **Storage**: Secure file storage with hash-based deduplication
+        
+      tags:
+        - Files
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: File to upload
+            examples:
+              text_file:
+                summary: Text File Upload
+                description: Upload a text file for RAG processing
+              pdf_document:
+                summary: PDF Document
+                description: Upload a PDF for multimodal analysis
+      responses:
+        '200':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUploadResponse'
+              examples:
+                text_file_response:
+                  summary: Text File Response
+                  value:
+                    id: "file-abc123"
+                    filename: "document.txt"
+                    content_type: "text/plain"
+                    size: 1024
+                    uploaded_at: "2023-12-01T10:00:00Z"
+                    processed: true
+                    rag_ingested: true
+                    message: "File uploaded successfully"
+                    processing_status: "Auto-processed through RAG system"
+                pdf_file_response:
+                  summary: PDF File Response
+                  value:
+                    id: "file-def456"
+                    filename: "report.pdf"
+                    content_type: "application/pdf"
+                    size: 2048576
+                    uploaded_at: "2023-12-01T10:05:00Z"
+                    processed: true
+                    rag_ingested: false
+                    message: "File uploaded successfully"
+                    processing_status: "Metadata extracted for multimodal processing"
+        '400':
+          description: Bad request - invalid file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+
+  /files/{file_id}:
+    get:
+      summary: Get File Info or Download
+      description: Get file information or download file content
+      tags:
+        - Files
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: File identifier
+        - name: download
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: Whether to download file content
+      responses:
+        '200':
+          description: File information or content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileInfo'
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: File not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+    delete:
+      summary: Delete File
+      description: Delete a file and its associated data
+      tags:
+        - Files
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: File identifier
+      responses:
+        '200':
+          description: File deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  file_id:
+                    type: string
+                  deleted_at:
+                    type: string
+                    format: date-time
+        '404':
+          description: File not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+
+  /mcp/documentation:
+    post:
+      summary: Query Documentation
+      description: Query current documentation for technologies and frameworks
+      tags:
+        - MCP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentationQueryRequest'
+      responses:
+        '200':
+          description: Documentation query result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MCPResultResponse'
+
+  /mcp/security:
+    post:
+      summary: Query Security Guidelines
+      description: Query current security guidelines and best practices
+      tags:
+        - MCP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecurityQueryRequest'
+      responses:
+        '200':
+          description: Security query result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MCPResultResponse'
+
+  /mcp/performance:
+    post:
+      summary: Query Performance Recommendations
+      description: Query performance optimization recommendations
+      tags:
+        - MCP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerformanceQueryRequest'
+      responses:
+        '200':
+          description: Performance query result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MCPResultResponse'
+
+  /mcp/versions:
+    post:
+      summary: Check Version Information
+      description: Check current version information for packages and dependencies
+      tags:
+        - MCP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionCheckRequest'
+      responses:
+        '200':
+          description: Version check result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MCPResultResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: mel_token
+      description: |
+        API key authentication using mel_ prefixed tokens.
+        
+        Include your API key in the Authorization header:
+        ```
+        Authorization: Bearer mel_your_api_key_here
+        ```
+
+  schemas:
+    # Core Models
+    ChatMessage:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          enum: [user, assistant, system]
+          description: The role of the message author
+        content:
+          type: string
+          minLength: 1
+          maxLength: 100000
+          description: The content of the message
+        name:
+          type: string
+          maxLength: 100
+          description: Optional name for the message author
+
+    Tool:
+      type: object
+      required:
+        - type
+        - function
+      properties:
+        type:
+          type: string
+          enum: [function]
+          description: The type of tool
+        function:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              description: The name of the function
+            description:
+              type: string
+              description: Description of the function
+            parameters:
+              type: object
+              description: Function parameters schema
+
+    ChatCompletionRequest:
+      type: object
+      required:
+        - model
+        - messages
+      properties:
+        model:
+          type: string
+          enum: [Melanie-3, Melanie-3-light, Melanie-3-code]
+          description: The AI model to use
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+          minItems: 1
+          maxItems: 100
+          description: List of messages in the conversation
+        tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tool'
+          maxItems: 20
+          description: Optional list of available tools
+        web_search:
+          type: boolean
+          default: false
+          description: Enable web search capabilities
+        max_tokens:
+          type: integer
+          minimum: 1
+          maximum: 100000
+          description: Maximum tokens to generate
+        temperature:
+          type: number
+          minimum: 0.0
+          maximum: 2.0
+          default: 0.7
+          description: Sampling temperature
+        top_p:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          default: 1.0
+          description: Nucleus sampling parameter
+        stream:
+          type: boolean
+          default: false
+          description: Enable streaming responses
+
+    ChatCompletionResponse:
+      type: object
+      required:
+        - id
+        - object
+        - created
+        - model
+        - choices
+        - usage
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the completion
+        object:
+          type: string
+          default: "chat.completion"
+          description: Object type
+        created:
+          type: integer
+          description: Unix timestamp of creation
+        model:
+          type: string
+          description: Model used for the completion
+        choices:
+          type: array
+          items:
+            type: object
+            properties:
+              index:
+                type: integer
+              message:
+                type: object
+                properties:
+                  role:
+                    type: string
+                  content:
+                    type: string
+                  tool_calls:
+                    type: array
+                    items:
+                      type: object
+              finish_reason:
+                type: string
+          description: List of completion choices
+        usage:
+          type: object
+          required:
+            - prompt_tokens
+            - completion_tokens
+            - total_tokens
+          properties:
+            prompt_tokens:
+              type: integer
+              description: Tokens in the prompt
+            completion_tokens:
+              type: integer
+              description: Tokens in the completion
+            total_tokens:
+              type: integer
+              description: Total tokens used
+        research_plan:
+          type: object
+          description: Optional research plan for deep research queries
+          properties:
+            id:
+              type: string
+            title:
+              type: string
+            description:
+              type: string
+            subtasks:
+              type: array
+              items:
+                type: object
+            estimated_agents:
+              type: integer
+            estimated_duration:
+              type: integer
+
+    # Authentication Models
+    CreateKeyResponse:
+      type: object
+      required:
+        - api_key
+        - key_id
+        - message
+        - rate_limit
+      properties:
+        api_key:
+          type: string
+          description: The generated API key (store securely)
+        key_id:
+          type: string
+          description: Key identifier for management
+        message:
+          type: string
+          description: Success message
+        rate_limit:
+          type: integer
+          description: Rate limit for this key
+
+    KeyInfoResponse:
+      type: object
+      required:
+        - key_id
+        - created_at
+        - is_active
+        - rate_limit
+      properties:
+        key_id:
+          type: string
+          description: Key identifier
+        created_at:
+          type: string
+          format: date-time
+          description: Key creation timestamp
+        last_used:
+          type: string
+          format: date-time
+          description: Last usage timestamp
+        is_active:
+          type: boolean
+          description: Whether the key is active
+        rate_limit:
+          type: integer
+          description: Rate limit for this key
+
+    # File Models
+    FileUploadResponse:
+      type: object
+      required:
+        - id
+        - filename
+        - content_type
+        - size
+        - uploaded_at
+        - processed
+        - rag_ingested
+        - message
+      properties:
+        id:
+          type: string
+          description: File identifier
+        filename:
+          type: string
+          description: Original filename
+        content_type:
+          type: string
+          description: MIME type of the file
+        size:
+          type: integer
+          description: File size in bytes
+        uploaded_at:
+          type: string
+          format: date-time
+          description: Upload timestamp
+        processed:
+          type: boolean
+          description: Whether file was processed
+        rag_ingested:
+          type: boolean
+          description: Whether file was ingested into RAG
+        message:
+          type: string
+          description: Upload status message
+        processing_status:
+          type: string
+          description: Processing status description
+
+    FileInfo:
+      type: object
+      required:
+        - id
+        - filename
+        - content_type
+        - size
+        - uploaded_at
+        - processed
+        - rag_ingested
+      properties:
+        id:
+          type: string
+          description: File identifier
+        filename:
+          type: string
+          description: Original filename
+        content_type:
+          type: string
+          description: MIME type of the file
+        size:
+          type: integer
+          description: File size in bytes
+        uploaded_at:
+          type: string
+          format: date-time
+          description: Upload timestamp
+        processed:
+          type: boolean
+          description: Whether file was processed
+        rag_ingested:
+          type: boolean
+          description: Whether file was ingested into RAG
+        content_hash:
+          type: string
+          description: SHA-256 hash of file content
+
+    # Health Models
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - message
+        - server_info
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+          description: Overall health status
+        message:
+          type: string
+          description: Health status message
+        tailscale_ip:
+          type: string
+          description: Tailscale IP address
+        server_info:
+          type: object
+          properties:
+            host:
+              type: string
+            port:
+              type: integer
+            tailscale_available:
+              type: boolean
+            cors_origins:
+              type: array
+              items:
+                type: string
+
+    DetailedHealthResponse:
+      type: object
+      required:
+        - status
+        - message
+        - timestamp
+        - components
+        - system_info
+        - performance_metrics
+        - uptime_seconds
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        components:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              status:
+                type: string
+              message:
+                type: string
+              last_check:
+                type: string
+                format: date-time
+        system_info:
+          type: object
+        performance_metrics:
+          type: object
+        uptime_seconds:
+          type: integer
+
+    PerformanceMetrics:
+      type: object
+      required:
+        - timestamp
+        - cpu
+        - memory
+        - disk
+        - process
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        cpu:
+          type: object
+          properties:
+            percent:
+              type: number
+            count:
+              type: integer
+        memory:
+          type: object
+          properties:
+            total_gb:
+              type: number
+            available_gb:
+              type: number
+            percent:
+              type: number
+        disk:
+          type: object
+          properties:
+            total_gb:
+              type: number
+            free_gb:
+              type: number
+            percent:
+              type: number
+        network:
+          type: object
+          properties:
+            bytes_sent:
+              type: integer
+            bytes_recv:
+              type: integer
+            packets_sent:
+              type: integer
+            packets_recv:
+              type: integer
+        process:
+          type: object
+          properties:
+            memory_mb:
+              type: number
+            cpu_percent:
+              type: number
+            threads:
+              type: integer
+            connections:
+              type: integer
+
+    TailscaleStatus:
+      type: object
+      required:
+        - tailscale_available
+        - network_interfaces
+      properties:
+        tailscale_available:
+          type: boolean
+          description: Whether Tailscale is available
+        tailscale_ip:
+          type: string
+          description: Tailscale IP address if available
+        network_interfaces:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: object
+              properties:
+                address:
+                  type: string
+                family:
+                  type: integer
+
+    # MCP Models
+    DocumentationQueryRequest:
+      type: object
+      required:
+        - technology
+        - topic
+      properties:
+        technology:
+          type: string
+          description: Technology name (e.g., fastapi, rust, python)
+        topic:
+          type: string
+          description: Specific topic or feature
+        version:
+          type: string
+          description: Optional version specification
+
+    SecurityQueryRequest:
+      type: object
+      required:
+        - technology
+      properties:
+        technology:
+          type: string
+          description: Technology or framework name
+        category:
+          type: string
+          default: "general"
+          description: Security category (auth, crypto, web, etc.)
+
+    PerformanceQueryRequest:
+      type: object
+      required:
+        - technology
+        - use_case
+      properties:
+        technology:
+          type: string
+          description: Technology name
+        use_case:
+          type: string
+          description: Specific use case or scenario
+
+    VersionCheckRequest:
+      type: object
+      required:
+        - packages
+      properties:
+        packages:
+          type: array
+          items:
+            type: string
+          description: List of package names to check
+
+    MCPResultResponse:
+      type: object
+      required:
+        - query_id
+        - tool_type
+        - success
+        - timestamp
+        - cached
+      properties:
+        query_id:
+          type: string
+          description: Unique query identifier
+        tool_type:
+          type: string
+          description: Type of MCP tool used
+        success:
+          type: boolean
+          description: Whether the query was successful
+        data:
+          type: object
+          description: Query result data
+        error:
+          type: string
+          description: Error message if query failed
+        source:
+          type: string
+          description: Data source information
+        timestamp:
+          type: string
+          format: date-time
+          description: Query timestamp
+        cached:
+          type: boolean
+          description: Whether result was cached
+
+    # Error Models
+    APIError:
+      type: object
+      required:
+        - error
+        - message
+        - timestamp
+      properties:
+        error:
+          type: string
+          description: Error code or type
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error details
+        timestamp:
+          type: string
+          format: date-time
+          description: Error timestamp
+
+tags:
+  - name: Core
+    description: Basic server information and status
+  - name: Health
+    description: Health monitoring and system status
+  - name: Network
+    description: Network and Tailscale status
+  - name: Authentication
+    description: API key management and authentication
+  - name: Chat
+    description: Chat completions and AI model interactions
+  - name: Files
+    description: File upload, processing, and management
+  - name: MCP
+    description: Model Context Protocol integrations
+
+externalDocs:
+  description: Melanie AI Documentation
+  url: https://github.com/your-org/melanie-ai/docs

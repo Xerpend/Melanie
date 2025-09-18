@@ -1,0 +1,98 @@
+@import "tailwindcss";
+@import "highlight.js/styles/github-dark.css";
+
+/* Melanie AI Dark Blue Theme */
+:root {
+  /* Primary colors */
+  --primary: #001F3F;
+  --accent: #007BFF;
+  --text: #F0F4F8;
+  
+  /* Background variations */
+  --background: #001F3F;
+  --background-light: #0A2A4A;
+  --background-card: #1A3A5A;
+  
+  /* Text variations */
+  --text-primary: #F0F4F8;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  
+  /* Accent variations */
+  --accent-hover: #0062CC;
+  --accent-light: #339FFF;
+  
+  /* Borders and dividers */
+  --border: #334155;
+  --border-light: #475569;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--text);
+  --font-sans: Inter, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', Consolas, monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--text);
+  font-family: Inter, system-ui, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-hover);
+}
+
+/* Selection styles */
+::selection {
+  background: var(--accent);
+  color: var(--text);
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Button and input base styles */
+button, input, textarea, select {
+  font-family: inherit;
+}
+
+/* Utility classes for theme consistency */
+.bg-primary { background-color: var(--primary); }
+.bg-accent { background-color: var(--accent); }
+.bg-card { background-color: var(--background-card); }
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+.border-theme { border-color: var(--border); }

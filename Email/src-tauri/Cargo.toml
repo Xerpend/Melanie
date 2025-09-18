@@ -1,0 +1,40 @@
+[package]
+name = "melanie-email"
+version = "1.0.0"
+description = "AI-enhanced email client with intelligent assistance"
+authors = ["Melanie AI Team"]
+license = "MIT"
+repository = "https://github.com/melanie-ai/melanie-email"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "1.5.1", features = [] }
+
+[dependencies]
+tauri = { version = "1.5.4", features = [ "dialog-all", "fs-all", "http-all", "notification-all", "path-all", "shell-open", "window-close", "window-hide", "window-maximize", "window-minimize", "window-show", "window-start-dragging", "window-unmaximize", "window-unminimize", "icon-png", "icon-ico"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+reqwest = { version = "0.11", features = ["json"] }
+uuid = { version = "1.0", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+dirs = "5.0"
+log = "0.4"
+env_logger = "0.10"
+
+# Email-specific dependencies
+imap = "2.4"
+native-tls = "0.2"
+mailparse = "0.14"
+lettre = "0.11"
+
+[features]
+# This feature is used for production builds or when `devPath` points to the filesystem
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]
+
+[[bin]]
+name = "melanie-email"
+path = "src/main.rs"

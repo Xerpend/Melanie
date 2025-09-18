@@ -1,0 +1,43 @@
+{
+  "chunking": {
+    "chunk_size": 450,
+    "overlap": 50,
+    "min_chunk_size": 100,
+    "max_chunk_size": 600
+  },
+  "vector_store": {
+    "backend": "Sled",
+    "db_path": "./rag_data",
+    "dimension": 1536,
+    "index_type": "Flat"
+  },
+  "embedding": {
+    "endpoint": "http://localhost:8000/embed",
+    "model": "text-embedding-ada-002",
+    "batch_size": 100,
+    "timeout": 30,
+    "max_retries": 3
+  },
+  "reranking": {
+    "endpoint": "http://localhost:8000/rerank",
+    "model": "rerank-english-v2.0",
+    "threshold": 0.7,
+    "max_candidates": 100,
+    "timeout": 30,
+    "max_retries": 3
+  },
+  "cache": {
+    "enabled": true,
+    "max_size": 10000,
+    "ttl": 3600,
+    "cache_embeddings": true,
+    "cache_reranking": true,
+    "cache_retrieval": true
+  },
+  "performance": {
+    "batch_size": 100,
+    "parallel_chunking": true,
+    "parallel_embedding": true,
+    "parallel_vector_ops": true
+  }
+}

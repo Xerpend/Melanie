@@ -1,0 +1,89 @@
+[package]
+name = "melanie-rag"
+version = "0.1.0"
+edition = "2021"
+authors = ["Melanie AI Team"]
+description = "High-performance RAG engine for the Melanie AI ecosystem"
+license = "MIT"
+
+[lib]
+name = "melanie_rag"
+crate-type = ["cdylib", "rlib"]  # Build as both Python extension and Rust library
+
+[dependencies]
+# PyO3 for Python bindings
+pyo3 = { version = "0.20", features = ["extension-module", "abi3-py38"], optional = true }
+pyo3-asyncio = { version = "0.20", features = ["tokio-runtime"], optional = true }
+
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+async-trait = "0.1"
+
+# Parallel processing
+rayon = "1.8"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Vector operations and numerical computing
+ndarray = "0.15"
+# faiss = { version = "0.12", optional = true }  # Commented out for now
+
+# Database and storage
+sled = "0.34"
+
+# HTTP client for embeddings
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+
+# Text processing and tokenization
+unicode-segmentation = "1.10"
+tokenizers = "0.15"
+
+# Caching
+lru = "0.12"
+
+# Utilities
+uuid = { version = "1.6", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Configuration
+config = "0.14"
+
+# Similarity and distance metrics (removed due to feature conflict)
+# linfa = { version = "0.7" }
+
+[dev-dependencies]
+tempfile = "3.8"
+tokio-test = "0.4"
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[features]
+default = ["sled-backend", "python-bindings"]
+# faiss-backend = ["faiss"]  # Commented out for now
+sled-backend = []
+python-bindings = ["pyo3", "pyo3-asyncio"]
+
+[[bench]]
+name = "chunking_benchmark"
+harness = false
+
+[[bench]]
+name = "vector_operations_benchmark"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+opt-level = 0
+debug = true

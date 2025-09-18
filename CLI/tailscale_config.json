@@ -1,0 +1,6 @@
+{
+  "api_base_url": "http://100.104.110.39:8000",
+  "security_mode": "tailscale_only",
+  "tailscale_ip": "100.104.110.39",
+  "localhost_disabled": true
+}

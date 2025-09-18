@@ -1,0 +1,53 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "melanie-rag"
+version = "0.1.0"
+description = "High-performance RAG engine for the Melanie AI ecosystem"
+authors = [
+    {name = "Melanie AI Team", email = "team@melanie.ai"},
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Rust",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "numpy>=1.20.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "maturin>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/melanie-ai/melanie-rag"
+Repository = "https://github.com/melanie-ai/melanie-rag"
+Documentation = "https://docs.melanie.ai/rag"
+
+[tool.maturin]
+module-name = "melanie_rag"
+bindings = "pyo3"
+
+[tool.pytest.ini_options]
+testpaths = ["../AI"]
+python_files = ["test_rag_pyo3_integration.py"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short"

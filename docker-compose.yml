@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  melanie-api:
+    build:
+      context: ./API
+      dockerfile: Dockerfile
+    container_name: melanie-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - ENVIRONMENT=production
+    env_file:
+      - ./API/.env
+    volumes:
+      - ./file_storage:/app/file_storage
+      - ./rag_data:/app/rag_data
+      - ./logs:/app/logs
+    networks:
+      - melanie-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  melanie-web:
+    build:
+      context: ./WEB
+      dockerfile: Dockerfile
+    container_name: melanie-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://melanie-api:8000
+    depends_on:
+      - melanie-api
+    networks:
+      - melanie-network
+    restart: unless-stopped
+
+  melanie-rag:
+    build:
+      context: ./RAG
+      dockerfile: Dockerfile
+    container_name: melanie-rag
+    volumes:
+      - ./rag_data:/app/rag_data
+    networks:
+      - melanie-network
+    restart: unless-stopped
+
+networks:
+  melanie-network:
+    driver: bridge
+
+volumes:
+  file_storage:
+  rag_data:
+  logs:

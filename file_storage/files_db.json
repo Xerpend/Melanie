@@ -1,0 +1,42 @@
+{
+  "2de7c424-0562-4890-abb1-0f5929f2a39f": {
+    "id": "2de7c424-0562-4890-abb1-0f5929f2a39f",
+    "filename": "test.txt",
+    "content_type": "text/plain",
+    "size": 21,
+    "uploaded_at": "2025-09-15T11:26:00.566066",
+    "processed": false,
+    "rag_ingested": false,
+    "content_hash": "cba0eeb2e9177ccc65aaadce32dd0c0545fa3c9725860c7473f4d8ae40c867b7"
+  },
+  "9f23e7fe-66b4-4537-9754-91f8de62fccd": {
+    "id": "9f23e7fe-66b4-4537-9754-91f8de62fccd",
+    "filename": "test.md",
+    "content_type": "text/plain",
+    "size": 20,
+    "uploaded_at": "2025-09-15T11:26:00.787355",
+    "processed": false,
+    "rag_ingested": false,
+    "content_hash": "942f14d1713ebde614ef6316d3ef159a9f8581caa05ddb1c772692a72f5488b5"
+  },
+  "06c868f6-cab7-44de-96d5-2248f5347e73": {
+    "id": "06c868f6-cab7-44de-96d5-2248f5347e73",
+    "filename": "test.pdf",
+    "content_type": "text/plain",
+    "size": 21,
+    "uploaded_at": "2025-09-15T11:26:01.008353",
+    "processed": true,
+    "rag_ingested": false,
+    "content_hash": "5e016a88a38079d41d82698b609852771d1b4d47cc58fc73104773c4c77d6a1e"
+  },
+  "ef1df4fc-dfee-4276-ae9a-fabeee9701f8": {
+    "id": "ef1df4fc-dfee-4276-ae9a-fabeee9701f8",
+    "filename": "test.txt",
+    "content_type": "image/png",
+    "size": 20,
+    "uploaded_at": "2025-09-15T11:26:02.831510",
+    "processed": false,
+    "rag_ingested": false,
+    "content_hash": "4722d3003969d18d31d321f519722f287b973f58a380f6f0bd2e99f314b7714c"
+  }
+}
